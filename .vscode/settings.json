@@ -1,0 +1,17 @@
+{
+    "window.zoomLevel": 1,
+    "editor.fontSize": 16,
+    "editor.tabSize": 2,
+    "workbench.sideBar.location": "right",
+    "files.eol": "\n",
+    "editor.wordWrap": "on",
+    "editor.minimap.enabled": false,
+    "editor.renderWhitespace": "boundary",
+    "auto-rename-tag.activationOnLanguage": [ "html", "xml", "php" ],
+    "emmet.includeLanguages": {
+        "javascript": "javascriptreact",
+        "vue-html": "html",
+        "plaintext": "jade"
+    },
+    "emmet.triggerExpansionOnTab": true
+}
