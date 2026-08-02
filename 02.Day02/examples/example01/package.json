@@ -1,0 +1,17 @@
+{
+  "name": "day02-example01",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chart.js Day02 - 使用 chart.js/auto 自動註冊全部元件",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "chart.js": "4.5.1"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

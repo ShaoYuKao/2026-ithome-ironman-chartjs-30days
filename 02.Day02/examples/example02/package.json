@@ -1,0 +1,17 @@
+{
+  "name": "day02-example02",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chart.js Day02 - 手動註冊折線圖需要的元件",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "chart.js": "4.5.1"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
