@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 4 - 本月支出佔比環狀圖</title>
+</head>
+<body>
+  <div style="width: 500px; margin: 40px auto;">
+    <canvas id="expenseChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+  const ctx = document.getElementById('expenseChart');
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['餐飲', '交通', '娛樂', '房租', '其他'],
+        datasets: [
+          {
+            label: '本月支出（元）',
+            data: [8000, 3000, 2000, 15000, 2000],
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.7)',
+              'rgba(54, 162, 235, 0.7)',
+              'rgba(255, 205, 86, 0.7)',
+              'rgba(75, 192, 192, 0.7)',
+              'rgba(153, 102, 255, 0.7)'
+            ],
+            borderColor: '#fff',
+            borderWidth: 2,
+            hoverOffset: 12 // 滑鼠移入時，該扇形往外突出 12px，強調焦點
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        cutout: '65%', // 中空比例，環狀較細
+        plugins: {
+          title: {
+            display: true,
+            text: '本月支出佔比',
+            font: { size: 18 }
+          },
+          legend: {
+            position: 'right',
+            labels: {
+              boxWidth: 16,
+              padding: 14
+            }
+          },
+          tooltip: {
+            callbacks: {
+              // 自訂 Tooltip 內容：同時顯示金額與百分比
+              label: (context) => {
+                const value = context.raw;
+                const total = context.dataset.data.reduce((sum, n) => sum + n, 0);
+                const percentage = ((value / total) * 100).toFixed(1);
+                return `${context.label}：${value} 元（${percentage}%）`;
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
