@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 3 - 單一資料集長條圖</title>
+</head>
+<body>
+  <div style="width: 600px; margin: 40px auto;">
+    <canvas id="barChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    const ctx = document.getElementById('barChart');
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['國文', '英文', '數學', '自然', '社會'],
+        datasets: [
+          {
+            label: '小明的期中考成績',
+            data: [85, 72, 90, 68, 77],
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.6)',
+              'rgba(255, 159, 64, 0.6)',
+              'rgba(255, 205, 86, 0.6)',
+              'rgba(75, 192, 192, 0.6)',
+              'rgba(54, 162, 235, 0.6)'
+            ],
+            borderColor: [
+              'rgb(255, 99, 132)',
+              'rgb(255, 159, 64)',
+              'rgb(255, 205, 86)',
+              'rgb(75, 192, 192)',
+              'rgb(54, 162, 235)'
+            ],
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: '各科目成績分佈'
+          },
+          legend: {
+            display: false // 只有一組資料集時，通常會關閉圖例
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

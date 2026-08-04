@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Day 3 - 綜合樣式範例</title>
+  </head>
+  <body>
+    <div style="width: 600px; margin: 40px auto">
+      <canvas id="barChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+    <script>
+      const ctx = document.getElementById("barChart");
+
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["一月", "二月", "三月", "四月", "五月", "六月"],
+          datasets: [
+            {
+              label: "2024 年銷售額（萬元）",
+              data: [12, 19, 8, 15, 22, 17],
+              backgroundColor: "rgba(75, 192, 192, 0.6)",
+              borderColor: "rgb(75, 192, 192)",
+              borderWidth: 1,
+              borderRadius: {
+                topLeft: 8,
+                topRight: 8,
+                bottomLeft: 0,
+                bottomRight: 0,
+              },
+              borderSkipped: "bottom", // 底部不畫邊框，符合圓角只在頂部的視覺效果
+              barPercentage: 0.6,
+              categoryPercentage: 0.7,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

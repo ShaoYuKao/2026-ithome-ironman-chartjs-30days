@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Day 3 - 多資料集長條圖</title>
+  </head>
+  <body>
+    <div style="width: 600px; margin: 40px auto">
+      <canvas id="barChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+    <script>
+      const ctx = document.getElementById("barChart");
+
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["一月", "二月", "三月", "四月", "五月", "六月"],
+          datasets: [
+            {
+              label: "2024 年銷售額（萬元）",
+              data: [12, 19, 8, 15, 22, 17],
+              backgroundColor: "rgba(75, 192, 192, 0.6)",
+              borderColor: "rgb(75, 192, 192)",
+              borderWidth: 1,
+            },
+            {
+              label: "2023 年銷售額（萬元）",
+              data: [8, 15, 6, 12, 18, 14],
+              backgroundColor: "rgba(255, 99, 132, 0.6)",
+              borderColor: "rgb(255, 99, 132)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "每月銷售額比較（2023 vs 2024）",
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

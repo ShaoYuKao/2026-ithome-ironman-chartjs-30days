@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Day 3 - 水平長條圖</title>
+  </head>
+  <body>
+    <div style="width: 600px; margin: 40px auto">
+      <canvas id="barChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+    <script>
+      const ctx = document.getElementById("barChart");
+
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["國文", "英文", "數學", "自然", "社會"],
+          datasets: [
+            {
+              label: "小明的期中考成績",
+              data: [85, 72, 90, 68, 77],
+              backgroundColor: "rgba(54, 162, 235, 0.6)",
+              borderColor: "rgb(54, 162, 235)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          indexAxis: "y", // 切換成水平長條圖
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: "各科目成績分佈（水平長條圖）",
+            },
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              max: 100,
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
