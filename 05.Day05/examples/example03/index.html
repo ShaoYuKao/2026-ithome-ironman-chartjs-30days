@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 5 - 業績走勢與預測</title>
+</head>
+<body>
+  <div style="width: 700px; margin: 40px auto;">
+    <canvas id="trendChart"></canvas>
+  </div>
+
+  <!-- 已包含 Filler，不需另外註冊 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('trendChart'), {
+      type: 'line',
+      data: {
+        labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月（預測）', '8月（預測）'],
+        datasets: [
+          {
+            label: '2025 年實際業績',
+            data: [65, 59, 80, 81, 56, 90, null, null],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.3)',
+            fill: true,     // 填色到 origin（區域圖效果）
+            tension: 0.4,   // 平滑曲線
+            pointRadius: 4
+          },
+          {
+            label: '未來預測趨勢',
+            // 前面補 null，只在最後幾個月呈現，並與實際業績最後一點銜接
+            data: [null, null, null, null, null, 90, 95, 100],
+            borderColor: 'rgb(153, 102, 255)',
+            borderDash: [6, 4], // 虛線
+            fill: false,
+            tension: 0.4,
+            pointRadius: 4,
+            pointStyle: 'rectRot'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: '2025 年業績走勢與未來兩個月預測' },
+          legend: { position: 'bottom' }
+        },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

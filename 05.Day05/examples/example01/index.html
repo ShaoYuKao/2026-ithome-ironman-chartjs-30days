@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 5 - 多條線比較</title>
+</head>
+<body>
+  <div style="width: 600px; margin: 40px auto;">
+    <canvas id="multiLineChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('multiLineChart'), {
+      type: 'line',
+      data: {
+        labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+        datasets: [
+          {
+            label: '2025 年業績',
+            data: [65, 59, 80, 81, 56, 90],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.5)'
+          },
+          {
+            label: '2024 年業績',
+            data: [45, 62, 50, 70, 48, 60],
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.5)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: '2024 vs 2025 業績比較' }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

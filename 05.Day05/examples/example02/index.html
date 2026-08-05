@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 5 - 最高溫與最低溫區間填色</title>
+</head>
+<body>
+  <div style="width: 600px; margin: 40px auto;">
+    <canvas id="tempRangeChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('tempRangeChart'), {
+      type: 'line',
+      data: {
+        labels: ['週一', '週二', '週三', '週四', '週五', '週六', '週日'],
+        datasets: [
+          {
+            label: '最高溫',
+            data: [30, 32, 31, 29, 33, 34, 30],
+            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            fill: '+1' // 填到「下一個」dataset（也就是最低溫）之間的區域
+          },
+          {
+            label: '最低溫',
+            data: [22, 23, 21, 20, 24, 25, 22],
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: '一週最高溫與最低溫溫差範圍' }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
