@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 6 - 時間軸（Time Scale）與 chartjs-adapter-date-fns</title>
+</head>
+<body>
+  <div style="width: 700px; margin: 40px auto;">
+    <h2 style="text-align: center; font-family: sans-serif;">每小時氣溫變化</h2>
+    <canvas id="timeScaleChart"></canvas>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0"></script>
+  <script>
+    new Chart(document.getElementById('timeScaleChart'), {
+      type: 'line',
+      data: {
+        datasets: [
+          {
+            label: '每小時氣溫（°C）',
+            data: [
+              { x: '2026-07-28 08:00', y: 26 },
+              { x: '2026-07-28 12:00', y: 31 },
+              { x: '2026-07-28 16:00', y: 33 },
+              { x: '2026-07-28 20:00', y: 28 }
+            ],
+            borderColor: 'rgb(255, 159, 64)',
+            backgroundColor: 'rgba(255, 159, 64, 0.5)',
+            tension: 0.3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: '2026/07/28 氣溫變化' }
+        },
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'hour',                       // 強制以「小時」為刻度單位
+              displayFormats: {
+                hour: 'HH:mm'                      // 刻度顯示格式，格式字串來自 date-fns 的 format tokens
+              },
+              tooltipFormat: 'yyyy/MM/dd HH:mm'    // 滑鼠移到資料點時，tooltip 顯示的日期格式
+            },
+            title: { display: true, text: '時間' }
+          },
+          y: {
+            title: { display: true, text: '氣溫（°C）' },
+            beginAtZero: false
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

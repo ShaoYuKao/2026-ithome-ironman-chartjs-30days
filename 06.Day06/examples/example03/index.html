@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 6 - 可縮放的時間序列圖表</title>
+</head>
+<body>
+  <div style="width: 800px; margin: 40px auto;">
+    <canvas id="timeZoomChart"></canvas>
+    <button id="resetBtn" style="margin-top: 10px;">重設縮放</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0"></script>
+  <script>
+    // 模擬「近 48 小時、每小時一筆」的氣溫資料
+    const now = new Date('2026-07-28T00:00:00');
+    const data = Array.from({ length: 48 }, (_, i) => ({
+      x: new Date(now.getTime() + i * 60 * 60 * 1000),
+      y: Math.round(24 + Math.sin(i / 4) * 6 + Math.random() * 2)
+    }));
+
+    const myChart = new Chart(document.getElementById('timeZoomChart'), {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: '每小時氣溫（°C）',
+          data,
+          borderColor: 'rgb(255, 99, 132)',
+          backgroundColor: 'rgba(255, 99, 132, 0.3)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0 // 資料點多時先隱藏圓點，畫面比較清爽
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: '近 48 小時氣溫變化（可滾輪縮放／拖曳平移）' },
+          zoom: {
+            pan: { enabled: true, mode: 'x' },
+            zoom: {
+              wheel: { enabled: true },
+              pinch: { enabled: true },
+              mode: 'x'
+            },
+            limits: {
+              x: { min: 'original', max: 'original' }
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'hour',
+              displayFormats: { hour: 'MM/dd HH:mm' },
+              tooltipFormat: 'yyyy/MM/dd HH:mm'
+            },
+            title: { display: true, text: '時間' }
+          },
+          y: {
+            title: { display: true, text: '氣溫（°C）' },
+            ticks: {
+              callback: (value) => `${value}°C` // 刻度加上溫度單位
+            }
+          }
+        }
+      }
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      myChart.resetZoom();
+    });
+  </script>
+</body>
+</html>

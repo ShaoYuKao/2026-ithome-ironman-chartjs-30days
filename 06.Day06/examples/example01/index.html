@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 6 - 雙 Y 軸圖表</title>
+</head>
+<body>
+  <div style="width: 700px; margin: 40px auto;">
+    <canvas id="dualAxisChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0"></script>
+  <script>
+    new Chart(document.getElementById('dualAxisChart'), {
+      data: {
+        labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+        datasets: [
+          {
+            type: 'bar',
+            label: '營業額（萬元）',
+            data: [120, 135, 98, 160, 175, 190],
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            yAxisID: 'y'      // 對應左側 y 軸
+          },
+          {
+            type: 'line',
+            label: '來客數（人）',
+            data: [3200, 3500, 2800, 4100, 4600, 5000],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            yAxisID: 'y1'     // 對應右側 y 軸
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: '每月營業額與來客數' }
+        },
+        scales: {
+          x: { title: { display: true, text: '月份' } },
+          y: {
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: '營業額（萬元）' },
+            beginAtZero: true
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: '來客數（人）' },
+            beginAtZero: true,
+            grid: {
+              drawOnChartArea: false // 避免右側軸的格線和左側軸重疊，畫面更乾淨
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
