@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 7 - 各科成績長條圖</title>
+</head>
+<body>
+  <div style="width: 700px; margin: 40px auto;">
+    <canvas id="scoreChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('scoreChart'), {
+      data: {
+        labels: ['國文', '英文', '數學', '自然', '社會'],
+        datasets: [
+          {
+            type: 'bar',
+            label: '成績',
+            data: [78, 55, 92, 68, 74],
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.6)',
+              'rgba(54, 162, 235, 0.6)',
+              'rgba(255, 206, 86, 0.6)',
+              'rgba(75, 192, 192, 0.6)',
+              'rgba(153, 102, 255, 0.6)'
+            ]
+          },
+          {
+            type: 'line',
+            label: '及格分數',
+            data: [60, 60, 60, 60, 60],
+            borderColor: 'rgb(255, 0, 0)',
+            borderDash: [6, 6],
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: '各科成績表現' },
+          legend: { position: 'top' }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: { display: true, text: '分數' }
+          },
+          x: {
+            title: { display: true, text: '科目' }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
