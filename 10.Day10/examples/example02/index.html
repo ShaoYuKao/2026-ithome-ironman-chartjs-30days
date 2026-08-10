@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 10 - 讀書時數與考試分數散佈圖</title>
+</head>
+<body>
+  <div style="width: 700px; margin: 40px auto;">
+    <canvas id="studyScoreScatter"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('studyScoreScatter'), {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            label: '學生成績分布',
+            data: [
+              { x: 2, y: 52 },
+              { x: 3, y: 58 },
+              { x: 4, y: 63 },
+              { x: 5, y: 68 },
+              { x: 6, y: 74 },
+              { x: 7, y: 77 },
+              { x: 8, y: 83 },
+              { x: 9, y: 88 },
+              { x: 10, y: 92 },
+              { x: 4, y: 90 }  // 故意放一個離群值（讀書時數少，但分數很高）
+            ],
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            pointRadius: 6,
+            pointHoverRadius: 9
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: '每週讀書時數 vs. 模擬考分數'
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const { x, y } = context.raw;
+                return `讀書時數：${x} 小時，分數：${y} 分`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: 'linear',
+            position: 'bottom',
+            title: {
+              display: true,
+              text: '每週讀書時數（小時）'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: '模擬考分數'
+            },
+            suggestedMin: 0,
+            suggestedMax: 100
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

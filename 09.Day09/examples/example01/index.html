@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 9 - 極座標圖入門</title>
+</head>
+<body>
+  <div style="width: 500px; margin: 40px auto;">
+    <canvas id="basicPolarArea"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('basicPolarArea'), {
+      type: 'polarArea',
+      data: {
+        labels: ['紅色', '綠色', '黃色', '灰色', '藍色'],
+        datasets: [
+          {
+            label: '票數統計',
+            data: [11, 16, 7, 3, 14],
+            backgroundColor: [
+              'rgb(255, 99, 132)',
+              'rgb(75, 192, 192)',
+              'rgb(255, 205, 86)',
+              'rgb(201, 203, 207)',
+              'rgb(54, 162, 235)'
+            ]
+          }
+        ]
+      }
+    });
+  </script>
+</body>
+</html>

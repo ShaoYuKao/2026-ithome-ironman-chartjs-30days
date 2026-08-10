@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 8 - 角色能力值比較雷達圖</title>
+</head>
+<body>
+  <div style="width: 600px; margin: 40px auto;">
+    <canvas id="characterRadar"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('characterRadar'), {
+      type: 'radar',
+      data: {
+        labels: ['力量', '敏捷', '智力', '體力', '幸運'],
+        datasets: [
+          {
+            label: '戰士',
+            data: [90, 60, 30, 85, 40],
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgb(255, 99, 132)',
+            pointBackgroundColor: 'rgb(255, 99, 132)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(255, 99, 132)'
+          },
+          {
+            label: '法師',
+            data: [30, 50, 95, 45, 55],
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgb(54, 162, 235)',
+            pointBackgroundColor: 'rgb(54, 162, 235)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(54, 162, 235)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: '角色能力值比較'
+          },
+          legend: {
+            position: 'top'
+          }
+        },
+        scales: {
+          r: {
+            beginAtZero: true,
+            min: 0,
+            max: 100,
+            ticks: {
+              stepSize: 20
+            },
+            angleLines: {
+              color: 'rgba(0, 0, 0, 0.2)'
+            },
+            grid: {
+              circular: true
+            },
+            pointLabels: {
+              font: {
+                size: 14,
+                weight: 'bold'
+              }
+            }
+          }
+        },
+        elements: {
+          line: {
+            borderWidth: 2
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

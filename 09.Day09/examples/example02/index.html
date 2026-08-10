@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 9 - 各部門員工人數極座標圖</title>
+</head>
+<body>
+  <div style="width: 600px; margin: 40px auto;">
+    <canvas id="departmentPolarArea"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('departmentPolarArea'), {
+      type: 'polarArea',
+      data: {
+        labels: ['業務部', '研發部', '行銷部', '客服部', '財務部'],
+        datasets: [
+          {
+            label: '員工人數',
+            data: [28, 45, 18, 22, 12],
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.7)',
+              'rgba(54, 162, 235, 0.7)',
+              'rgba(255, 205, 86, 0.7)',
+              'rgba(75, 192, 192, 0.7)',
+              'rgba(153, 102, 255, 0.7)'
+            ],
+            borderColor: '#fff',
+            borderWidth: 2,
+            spacing: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: '各部門員工人數分布'
+          },
+          legend: {
+            position: 'right'
+          }
+        },
+        scales: {
+          r: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 10,
+              backdropColor: 'rgba(255, 255, 255, 0.75)'
+            },
+            angleLines: {
+              color: 'rgba(0, 0, 0, 0.15)'
+            }
+          }
+        },
+        animation: {
+          animateRotate: true,
+          animateScale: true
+        }
+      }
+    });
+  </script>
+</body>
+</html>

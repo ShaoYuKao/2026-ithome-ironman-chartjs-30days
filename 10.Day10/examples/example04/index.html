@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 10 - 產品售價、銷售量與市佔率氣泡圖</title>
+</head>
+<body>
+  <div style="width: 700px; margin: 40px auto;">
+    <canvas id="productBubble"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    // 原始市佔率資料（單位：%），數值差異不大，直接當作半徑使用
+    const products = [
+      { name: '入門款', price: 299, sales: 1200, marketShare: 8 },
+      { name: '標準款', price: 499, sales: 950, marketShare: 18 },
+      { name: '進階款', price: 799, sales: 600, marketShare: 25 },
+      { name: '旗艦款', price: 1299, sales: 300, marketShare: 32 },
+      { name: '限量款', price: 1999, sales: 80, marketShare: 12 }
+    ];
+
+    new Chart(document.getElementById('productBubble'), {
+      type: 'bubble',
+      data: {
+        datasets: [
+          {
+            label: '產品分析（氣泡大小＝市佔率）',
+            data: products.map((p) => ({
+              x: p.price,
+              y: p.sales,
+              r: p.marketShare,
+              // 把產品名稱一併存進資料點，方便 tooltip 顯示
+              productName: p.name
+            })),
+            backgroundColor: 'rgba(255, 159, 64, 0.6)',
+            borderColor: 'rgba(255, 159, 64, 1)',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: '產品售價、銷售量與市佔率分析'
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const raw = context.raw;
+                return `${raw.productName}：售價 $${raw.x}，銷量 ${raw.y} 件，市佔率 ${raw.r}%`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: '售價（元）' }
+          },
+          y: {
+            title: { display: true, text: '銷售數量（件）' }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

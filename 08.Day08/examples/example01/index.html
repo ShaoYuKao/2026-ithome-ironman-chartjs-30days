@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 8 - 雷達圖入門</title>
+</head>
+<body>
+  <div style="width: 500px; margin: 40px auto;">
+    <canvas id="basicRadar"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('basicRadar'), {
+      type: 'radar',
+      data: {
+        labels: ['力量', '敏捷', '智力', '體力', '幸運'],
+        datasets: [
+          {
+            label: '戰士',
+            data: [90, 60, 30, 85, 40],
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgb(255, 99, 132)',
+            pointBackgroundColor: 'rgb(255, 99, 132)'
+          }
+        ]
+      }
+    });
+  </script>
+</body>
+</html>
