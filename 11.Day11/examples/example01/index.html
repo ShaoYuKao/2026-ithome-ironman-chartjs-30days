@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 11 - 混合圖表入門</title>
+</head>
+<body>
+  <div style="width: 600px; margin: 40px auto;">
+    <canvas id="basicMixed"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    new Chart(document.getElementById('basicMixed'), {
+      type: 'bar', // 預設類型（也是圖表最外層使用的座標軸行為基礎）
+      data: {
+        labels: ['一月', '二月', '三月', '四月'],
+        datasets: [
+          {
+            type: 'bar',
+            label: '長條資料集',
+            data: [10, 20, 30, 40],
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: 'rgb(255, 99, 132)'
+          },
+          {
+            type: 'line',
+            label: '折線資料集',
+            data: [50, 50, 50, 50],
+            borderColor: 'rgb(54, 162, 235)',
+            fill: false
+          }
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

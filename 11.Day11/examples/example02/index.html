@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 11 - 業績長條與成長趨勢線</title>
+</head>
+<body>
+  <div style="width: 750px; margin: 40px auto;">
+    <canvas id="salesMixedChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    const months = ['1月', '2月', '3月', '4月', '5月', '6月'];
+    const salesAmount = [320000, 350000, 300000, 410000, 450000, 480000]; // 每月業績（元）
+    const growthRate = [3.2, 5.1, -1.8, 8.6, 6.4, 9.2]; // 年成長率（%）
+
+    new Chart(document.getElementById('salesMixedChart'), {
+      type: 'bar',
+      data: {
+        labels: months,
+        datasets: [
+          {
+            type: 'bar',
+            label: '每月業績（元）',
+            data: salesAmount,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgb(54, 162, 235)',
+            borderWidth: 1,
+            yAxisID: 'yAmount',
+            order: 2 // 畫在下層
+          },
+          {
+            type: 'line',
+            label: '年成長率（%）',
+            data: growthRate,
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderWidth: 2,
+            pointRadius: 4,
+            fill: false,
+            tension: 0.3,
+            yAxisID: 'yPercent',
+            order: 1 // 畫在上層，確保折線不會被長條擋住
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: '業績儀表板：每月業績 vs. 年成長率'
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const label = context.dataset.label;
+                const value = context.raw;
+                if (context.dataset.yAxisID === 'yAmount') {
+                  return `${label}：NT$ ${value.toLocaleString()}`;
+                }
+                return `${label}：${value}%`;
+              }
+            }
+          }
+        },
+        scales: {
+          yAmount: {
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: '業績金額（元）' },
+            beginAtZero: true
+          },
+          yPercent: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: '年成長率（%）' },
+            grid: {
+              drawOnChartArea: false // 避免右側座標軸的格線與左側重疊，畫面更乾淨
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
