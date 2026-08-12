@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Day 22｜外掛系統（Plugins）基礎</title>
+  <style>
+    body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
+    h1 { font-size: 1.4rem; }
+    button { padding: 8px 16px; margin: 12px 8px 12px 0; cursor: pointer; }
+    #chartContainer { position: relative; height: 420px; }
+    p.tip { color: #666; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>Day 22｜Plugin 基礎：datalabels + 生命週期 Hook 紀錄</h1>
+  <p class="tip">請打開瀏覽器開發者工具的 Console，觀察每次載入 / 更新圖表時，生命週期 Hook 被呼叫的順序。</p>
+
+  <button id="updateBtn">更新資料</button>
+  <button id="toggleLabelsBtn">切換資料標籤（datalabels）</button>
+
+  <div id="chartContainer">
+    <canvas id="salesChart"></canvas>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <script>
+    // ------------------------------------------------------------
+    // 練習一：撰寫一個「生命週期紀錄外掛」，用 console.log 印出 Hook 呼叫順序
+    // 這個外掛只用來觀察，示範用 Per-chart Plugin 的方式套用（見下方 plugins 陣列）
+    // ------------------------------------------------------------
+    const lifecycleLoggerPlugin = {
+      id: 'lifecycleLogger',
+      beforeInit: () => console.log('[lifecycle] beforeInit'),
+      afterInit: () => console.log('[lifecycle] afterInit'),
+      beforeUpdate: () => console.log('[lifecycle] beforeUpdate'),
+      afterUpdate: () => console.log('[lifecycle] afterUpdate'),
+      beforeLayout: () => console.log('[lifecycle] beforeLayout'),
+      afterLayout: () => console.log('[lifecycle] afterLayout'),
+      beforeRender: () => console.log('[lifecycle] beforeRender'),
+      beforeDraw: () => console.log('[lifecycle] beforeDraw'),
+      afterDraw: () => console.log('[lifecycle] afterDraw'),
+      afterRender: () => console.log('[lifecycle] afterRender'),
+      beforeDestroy: () => console.log('[lifecycle] beforeDestroy'),
+      afterDestroy: () => console.log('[lifecycle] afterDestroy')
+    };
+
+    // ------------------------------------------------------------
+    // 練習二：使用官方外掛 chartjs-plugin-datalabels
+    // 透過 CDN 載入時只會建立全域變數 window.ChartDataLabels，
+    // 仍必須手動呼叫 Chart.register() 才會真正註冊成 Chart.js 的 Global Plugin
+    // ------------------------------------------------------------
+    Chart.register(ChartDataLabels);
+
+    const ctx = document.getElementById('salesChart');
+
+    function randomData() {
+      return Array.from({ length: 4 }, () => Math.round(Math.random() * 60 + 20));
+    }
+
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['一月', '二月', '三月', '四月'],
+        datasets: [{
+          label: '銷售額（萬元）',
+          data: [65, 59, 80, 81],
+          backgroundColor: '#4bc0c0'
+        }]
+      },
+      // Per-chart Plugin：只有這張圖表會套用生命週期紀錄外掛
+      plugins: [lifecycleLoggerPlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true },
+          // datalabels 外掛的設定，放在 options.plugins.datalabels 底下
+          datalabels: {
+            color: '#333',
+            anchor: 'end',
+            align: 'top',
+            font: { weight: 'bold' },
+            formatter: (value) => `${value} 萬`
+          }
+        }
+      }
+    });
+
+    document.getElementById('updateBtn').addEventListener('click', () => {
+      chart.data.datasets[0].data = randomData();
+      chart.update(); // 觸發 beforeUpdate → afterUpdate → ... → afterRender 一連串 Hook
+    });
+
+    let labelsEnabled = true;
+    document.getElementById('toggleLabelsBtn').addEventListener('click', () => {
+      labelsEnabled = !labelsEnabled;
+      // 動態切換單一外掛：只停用/啟用 id 為 'datalabels' 的外掛
+      chart.options.plugins.datalabels = labelsEnabled
+        ? { color: '#333', anchor: 'end', align: 'top', font: { weight: 'bold' }, formatter: (value) => `${value} 萬` }
+        : false;
+      chart.update();
+    });
+  </script>
+</body>
+</html>
