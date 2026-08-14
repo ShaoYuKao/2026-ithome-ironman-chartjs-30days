@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 14 - 業績儀表板</title>
+  <style>
+    body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; }
+    .wrap { width: 760px; margin: 40px auto; }
+    #statusText { color: #333; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h3 id="statusText">目前達標狀況：計算中...</h3>
+    <canvas id="dashboardChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    const labels = ['1月', '2月', '3月', '4月', '5月', '6月'];
+    const actualRevenue = [65, 72, 68, 90, 85, 95];   // 實際營收（萬元）
+    const targetRevenue = [70, 70, 75, 80, 80, 85];   // 業績目標（萬元）
+    const lastYearRevenue = [50, 55, 60, 62, 65, 70]; // 去年同期營收（萬元）
+
+    /**
+     * 更新頁面上顯示的達標狀態文字
+     * @param {Chart} chart - Chart.js 的圖表實例
+     */
+    function updateStatusText(chart) {
+      const meta = chart.getDatasetMeta(0); // 實際營收 dataset
+      const el = document.getElementById('statusText');
+      if (meta.hidden) {
+        el.textContent = '目前達標狀況：已隱藏「實際營收」資料，無法判斷';
+        return;
+      }
+      const totalActual = actualRevenue.reduce((a, b) => a + b, 0);
+      const totalTarget = targetRevenue.reduce((a, b) => a + b, 0);
+      const rate = ((totalActual / totalTarget) * 100).toFixed(1);
+      el.textContent = `目前達標狀況：累計達成率 ${rate}%（${rate >= 100 ? '已達標 🎉' : '尚未達標'}）`;
+    }
+
+    const config = {
+      data: {
+        labels,
+        datasets: [
+          {
+            type: 'bar',
+            label: '實際營收',
+            data: actualRevenue,
+            backgroundColor: 'rgba(75, 139, 245, 0.7)',
+            borderColor: 'rgb(75, 139, 245)',
+            borderRadius: 4,
+            order: 2
+          },
+          {
+            type: 'line',
+            label: '業績目標',
+            data: targetRevenue,
+            borderColor: 'rgb(255, 99, 132)',
+            borderDash: [6, 6],
+            pointRadius: 0,
+            fill: false,
+            tension: 0,
+            order: 1
+          },
+          {
+            type: 'line',
+            label: '去年同期營收',
+            data: lastYearRevenue,
+            borderColor: 'rgb(153, 153, 153)',
+            borderDash: [2, 4],
+            pointRadius: 3,
+            fill: false,
+            tension: 0.3,
+            order: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        animation: {
+          duration: 800,
+          easing: 'easeOutQuart'
+        },
+        // 依 X 軸索引比對，讓同一月份的三個 dataset 同時顯示在 Tooltip
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: '2025 年上半年業績儀表板'
+          },
+          legend: {
+            position: 'top',
+            onClick: (event, legendItem, legend) => {
+              // 沿用 Chart.js 預設的圖例切換邏輯
+              const index = legendItem.datasetIndex;
+              const chart = legend.chart;
+              const meta = chart.getDatasetMeta(index);
+              meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : null;
+              chart.update();
+              // 客製化：切換「實際營收」時，同步更新頁面上的達標狀態文字
+              if (index === 0) {
+                updateStatusText(chart);
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const label = context.dataset.label;
+                const value = context.parsed.y;
+                if (label === '實際營收') {
+                  const target = targetRevenue[context.dataIndex];
+                  const rate = ((value / target) * 100).toFixed(1);
+                  return `${label}：${value} 萬元（達成率 ${rate}%）`;
+                }
+                return `${label}：${value} 萬元`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: '營收（萬元）' }
+          },
+          x: {
+            title: { display: true, text: '月份' }
+          }
+        }
+      }
+    };
+
+    const chart = new Chart(document.getElementById('dashboardChart'), config);
+    updateStatusText(chart);
+  </script>
+</body>
+</html>
