@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 16 - 串接後端 API（RESTful）</title>
+  <style>
+    body { font-family: 'Microsoft JhengHei', sans-serif; }
+    .container { width: 760px; margin: 40px auto; }
+    .toolbar { margin-bottom: 16px; }
+    button { margin-right: 8px; padding: 6px 12px; cursor: pointer; }
+    #statusText { font-weight: bold; }
+    #statusText.loading { color: #f0a500; }
+    #statusText.error { color: #e04b4b; }
+    #statusText.success { color: #2e8b57; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <button id="btnLoad">重新載入資料</button>
+      <button id="btnDelay">模擬 2 秒延遲</button>
+      <button id="btnError">模擬伺服器錯誤</button>
+    </div>
+    <p id="statusText">資料載入中...</p>
+    <canvas id="salesChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    const API_BASE_URL = 'http://localhost:3000';
+    const colorPalette = ['rgb(75, 139, 245)', 'rgb(255, 99, 132)', 'rgb(255, 205, 86)'];
+
+    const statusText = document.getElementById('statusText');
+    let chartInstance = null;
+
+    // 把 API 回傳的 JSON 轉換成 Chart.js 需要的格式
+    function transformToChartData(json) {
+      return {
+        labels: json.months,
+        datasets: json.products.map((product, index) => ({
+          label: product.name,
+          data: product.revenue,
+          borderColor: colorPalette[index % colorPalette.length],
+          backgroundColor: colorPalette[index % colorPalette.length],
+          tension: 0.3,
+          fill: false
+        }))
+      };
+    }
+
+    function setStatus(text, type) {
+      statusText.textContent = text;
+      statusText.className = type || '';
+    }
+
+    function renderChart(chartData) {
+      if (chartInstance) {
+        // 資料重新載入時，先銷毀舊圖表，避免畫面上疊出多張圖
+        chartInstance.destroy();
+      }
+      chartInstance = new Chart(document.getElementById('salesChart'), {
+        type: 'line',
+        data: chartData,
+        options: {
+          responsive: true,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { title: { display: true, text: '近六個月各產品線營收（萬元）' }, tooltip: { mode: 'index', intersect: false }},
+          scales: { y: { beginAtZero: true, title: { display: true, text: '營收（萬元）' } } }
+        }
+      });
+    }
+
+    /**
+     * 呼叫後端 RESTful API 取得銷售資料
+     * @param {Object} options
+     * @param {number} [options.delay] - 模擬延遲毫秒數
+     * @param {boolean} [options.forceError] - 是否故意觸發伺服器錯誤
+     */
+    async function loadSalesData({ delay = 0, forceError = false } = {}) {
+      setStatus('資料載入中...', 'loading');
+
+      const params = new URLSearchParams();
+      if (delay) params.set('delay', String(delay));
+      if (forceError) params.set('error', '1');
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/sales?${params.toString()}`);
+
+        // fetch 不會自動把 4xx / 5xx 當成錯誤，務必自行檢查 response.ok
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => ({}));
+          throw new Error(errorBody.message || `HTTP 錯誤狀態碼：${response.status}`);
+        }
+
+        const json = await response.json();
+        const chartData = transformToChartData(json);
+        renderChart(chartData);
+        setStatus('資料載入完成！', 'success');
+      } catch (error) {
+        console.error('讀取資料失敗：', error);
+        setStatus(`資料載入失敗：${error.message}`, 'error');
+      }
+    }
+
+    document.getElementById('btnLoad').addEventListener('click', () => loadSalesData());
+    document.getElementById('btnDelay').addEventListener('click', () => loadSalesData({ delay: 2000 }));
+    document.getElementById('btnError').addEventListener('click', () => loadSalesData({ forceError: true }));
+
+    loadSalesData();
+  </script>
+</body>
+</html>

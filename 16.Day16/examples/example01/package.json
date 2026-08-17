@@ -1,0 +1,15 @@
+{
+  "name": "day16-express-api-demo",
+  "version": "1.0.0",
+  "description": "Day 16｜串接後端 API（RESTful）範例：Express 後端 + Chart.js 前端",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

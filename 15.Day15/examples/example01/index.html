@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 15 - 串接靜態 JSON 資料</title>
+</head>
+<body>
+  <div style="width: 760px; margin: 40px auto;">
+    <p id="statusText">資料載入中...</p>
+    <canvas id="salesChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    const colorPalette = [
+      'rgb(75, 139, 245)',
+      'rgb(255, 99, 132)',
+      'rgb(255, 205, 86)'
+    ];
+
+    // 步驟一：轉換函式，把 JSON 結構轉成 Chart.js 需要的格式
+    /**
+     * @param {Object} json - JSON 資料
+     * @returns {Object} Chart.js 所需的資料格式
+     */
+    function transformToChartData(json) {
+      return {
+        labels: json.months,
+        datasets: json.products.map((product, index) => ({
+          label: product.name,
+          data: product.revenue,
+          borderColor: colorPalette[index % colorPalette.length],
+          backgroundColor: colorPalette[index % colorPalette.length],
+          tension: 0.3,
+          fill: false
+        }))
+      };
+    }
+
+    // 步驟二：讀取 JSON 並畫圖
+    async function initChart() {
+      const statusText = document.getElementById('statusText');
+      try {
+        const response = await fetch('data/sales.json');
+
+        // fetch 不會自動把 404 / 500 當成錯誤，要自己檢查 response.ok
+        if (!response.ok) {
+          throw new Error(`HTTP 錯誤狀態碼：${response.status}`);
+        }
+
+        const json = await response.json();
+        const chartData = transformToChartData(json);
+
+        new Chart(document.getElementById('salesChart'), {
+          type: 'line',
+          data: chartData,
+          options: {
+            responsive: true,
+            // interaction 設定 mode: 'index' 讓同一 X 軸座標的所有資料集提示框同時顯示
+            interaction: {
+              mode: 'index',
+              intersect: false
+            },
+            plugins: {
+              title: { display: true, text: '近六個月各產品線營收（萬元）' },
+              tooltip: {
+                mode: 'index',
+                intersect: false
+              }
+            },
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: '營收（萬元）' } }
+            }
+          }
+        });
+
+        statusText.textContent = '資料載入完成！';
+      } catch (error) {
+        console.error('讀取資料失敗：', error);
+        statusText.textContent = '資料載入失敗，請確認 JSON 檔案路徑是否正確。';
+      }
+    }
+
+    initChart();
+  </script>
+</body>
+</html>
