@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Day 19 - 互動事件處理（點擊 / 懸停基礎）</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <style>
+    body { font-family: "Microsoft JhengHei", sans-serif; max-width: 720px; margin: 40px auto; }
+    #panel {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border: 1px dashed #999;
+      border-radius: 6px;
+      background: #fafafa;
+      min-height: 24px;
+    }
+    canvas { max-height: 400px; }
+    code { background: #eee; padding: 1px 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>各部門本月業績（點擊 / 懸停示範）</h1>
+  <p>
+    滑鼠移到長條上會變成手指游標（<code>onHover</code>），點擊長條則會用
+    <code>getElementsAtEventForMode</code> 取得對應的資料，並把該部門的名稱與業績顯示在下方面板，
+    同時把被點擊的長條改成醒目的顏色。
+  </p>
+
+  <canvas id="deptChart"></canvas>
+  <div id="panel">尚未點擊任何長條，請試著點一下圖表上的資料。</div>
+
+  <script>
+    const labels = ['業務一部', '業務二部', '業務三部', '業務四部'];
+    const values = [320, 450, 280, 510];
+
+    // 預設顏色與被選取後要顯示的醒目顏色，兩者分開管理，方便之後依 index 切換
+    const baseColor = 'rgba(54, 162, 235, 0.6)';
+    const activeColor = 'rgba(255, 99, 132, 0.8)';
+    const backgroundColors = labels.map(() => baseColor);
+
+    const ctx = document.getElementById('deptChart');
+    const panel = document.getElementById('panel');
+
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: '業績（萬元）',
+          data: values,
+          backgroundColor: backgroundColors
+        }]
+      },
+      options: {
+        responsive: true,
+        // events 決定圖表要監聽哪些瀏覽器事件，預設就包含 click 與 mousemove，
+        // 這裡明確列出來，方便對照文件說明
+        events: ['mousemove', 'mouseout', 'click'],
+
+        // onHover：滑鼠移動、觸碰到資料點時觸發，這裡示範改變游標樣式
+        onHover: (event, activeElements) => {
+          event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+        },
+
+        // onClick：使用者點擊 chartArea 時觸發
+        onClick: (event, activeElements, chartInstance) => {
+          // 也可以直接使用 activeElements，這裡改用 getElementsAtEventForMode
+          // 是為了示範如何「自行指定互動模式（mode）」，兩者效果類似
+          const points = chartInstance.getElementsAtEventForMode(
+            event,
+            'nearest',
+            { intersect: true },
+            true
+          );
+
+          if (!points.length) {
+            panel.textContent = '沒有點擊到任何長條，請點擊圖表上的柱狀區域。';
+            return;
+          }
+
+          const point = points[0];
+          const label = chartInstance.data.labels[point.index];
+          const value = chartInstance.data.datasets[point.datasetIndex].data[point.index];
+
+          // 更新面板文字
+          panel.textContent = `你點擊了「${label}」，本月業績為 ${value} 萬元。`;
+
+          // 把所有長條顏色重設為預設值，再把被點擊的那一根改成醒目顏色
+          const colors = labels.map((_, i) => (i === point.index ? activeColor : baseColor));
+          chartInstance.data.datasets[0].backgroundColor = colors;
+          chartInstance.update();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
