@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 17 - 串接 CSV 資料</title>
+</head>
+<body>
+  <div style="width: 760px; margin: 40px auto;">
+    <p id="statusText">資料載入中...</p>
+    <canvas id="salesChart"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.4/papaparse.min.js"></script>
+  <script>
+    const colorPalette = [
+      'rgb(75, 139, 245)',
+      'rgb(255, 99, 132)',
+      'rgb(255, 205, 86)'
+    ];
+
+    // 步驟一：用 Promise 包裝 Papa.parse，讓它可以搭配 async/await 使用
+    function parseCsv(url) {
+      return new Promise((resolve, reject) => {
+        Papa.parse(url, {
+          download: true,       // 直接下載遠端／本地路徑的 CSV 檔案
+          header: true,         // 第一列當成欄位名稱，轉成物件陣列
+          dynamicTyping: true,  // 自動把數字字串轉成 number 型別
+          skipEmptyLines: true, // 忽略檔案裡的空白行
+          complete: (results) => resolve(results.data),
+          error: (error) => reject(error)
+        });
+      });
+    }
+
+    // 步驟二：資料清洗（filter）與分組彙總（reduce）
+    function transformToChartData(rows) {
+      // 2-1 filter：篩掉營收是空值、負數等不合理的髒資料
+      const cleanRows = rows.filter((row) => {
+        return typeof row.revenue === 'number' && row.revenue >= 0;
+      });
+
+      // 2-2 map：先取出不重複的月份，做為圖表 labels（x 軸）
+      const months = [...new Set(cleanRows.map((row) => row.month))];
+
+      // 2-3 reduce：把資料依「產品名稱」分組，整理成 { 產品名稱: [各月營收] }
+      const grouped = cleanRows.reduce((acc, row) => {
+        if (!acc[row.product]) {
+          acc[row.product] = {};
+        }
+        // 同一產品、同一月份可能有多筆（例如不同地區），用累加的方式合併
+        acc[row.product][row.month] = (acc[row.product][row.month] || 0) + row.revenue;
+        return acc;
+      }, {});
+
+      // 2-4 map：把分組後的物件，轉換成 Chart.js 需要的 datasets 陣列
+      const datasets = Object.keys(grouped).map((productName, index) => ({
+        label: productName,
+        data: months.map((month) => grouped[productName][month] || 0),
+        borderColor: colorPalette[index % colorPalette.length],
+        backgroundColor: colorPalette[index % colorPalette.length],
+        tension: 0.3,
+        fill: false
+      }));
+
+      return { labels: months, datasets };
+    }
+
+    let chartInstance = null;
+
+    function renderChart(chartData) {
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+      chartInstance = new Chart(document.getElementById('salesChart'), {
+        type: 'line',
+        data: chartData,
+        options: {
+          responsive: true,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            title: { display: true, text: '近六個月各產品線營收（萬元，來源：CSV）' }, tooltip: { mode: 'index', intersect: false }},
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: '營收（萬元）' } }
+          }
+        }
+      });
+    }
+
+    async function initChart() {
+      const statusText = document.getElementById('statusText');
+      try {
+        const rows = await parseCsv('data/sales.csv');
+        const chartData = transformToChartData(rows);
+        renderChart(chartData);
+        statusText.textContent = `資料載入完成！（共處理 ${rows.length} 筆原始資料，已清洗）`;
+      } catch (error) {
+        console.error('讀取 CSV 失敗：', error);
+        statusText.textContent = '資料載入失敗，請確認 CSV 檔案路徑是否正確。';
+      }
+    }
+
+    initChart();
+  </script>
+</body>
+</html>

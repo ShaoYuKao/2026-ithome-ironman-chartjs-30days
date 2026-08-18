@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Day 18 - 動態資料更新（串接 Express API）</title>
+  <style>
+    body { font-family: "Microsoft JhengHei", sans-serif; max-width: 720px; margin: 40px auto; }
+    .toolbar { margin-bottom: 16px; display: flex; gap: 8px; align-items: center; }
+    button { padding: 6px 16px; cursor: pointer; }
+    #status { color: #666; font-size: 14px; }
+    canvas { max-height: 400px; }
+  </style>
+</head>
+<body>
+  <h1>即時股價監控（前端輪詢 Express API）</h1>
+  <p>
+    這個範例的資料來源不再是前端自己算出來的隨機數，而是每 2 秒向
+    <code>http://localhost:3000/api/stock</code> 這支 Express API 發送一次 <code>fetch</code> 請求，
+    取得「當下最新的股價」再畫到圖表上——這種模式稱為 <strong>Polling（輪詢）</strong>，
+    是最簡單、也最容易上手的即時資料更新方式。
+  </p>
+  <p>⚠️ 執行前請先在 <code>examples/example02</code> 資料夾內執行 <code>npm install</code> 與 <code>npm start</code> 啟動後端伺服器。</p>
+
+  <div class="toolbar">
+    <button id="startBtn">開始輪詢</button>
+    <button id="stopBtn" disabled>暫停</button>
+    <span id="status">尚未開始</span>
+  </div>
+
+  <canvas id="stockChart"></canvas>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script>
+    const API_URL = 'http://localhost:3000/api/stock';
+    const MAX_POINTS = 15;
+    const POLLING_INTERVAL_MS = 2000;
+
+    let timerId = null;
+
+    const ctx = document.getElementById('stockChart');
+    const statusText = document.getElementById('status');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'DEMO 股價',
+          data: [],
+          borderColor: '#2980b9',
+          backgroundColor: 'rgba(41, 128, 185, 0.15)',
+          tension: 0.25,
+          pointRadius: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 300 },
+        scales: {
+          y: { title: { display: true, text: '股價（元）' } },
+          x: { title: { display: true, text: '時間' } }
+        },
+        plugins: {
+          title: { display: true, text: '即時股價走勢（來源：Express API）' }
+        }
+      }
+    });
+
+    function pushData(label, value) {
+      chart.data.labels.push(label);
+      chart.data.datasets[0].data.push(value);
+      if (chart.data.labels.length > MAX_POINTS) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+      }
+      // 高頻率更新時，改用 'none' 模式關閉動畫，避免動畫堆疊造成畫面卡頓
+      chart.update('none');
+    }
+
+    async function fetchLatestPrice() {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const result = await response.json();
+        const time = new Date(result.timestamp).toLocaleTimeString('zh-TW', { hour12: false });
+        pushData(time, result.price);
+        statusText.textContent = `輪詢中... 最新股價：${result.price} 元（${time}）`;
+      } catch (error) {
+        console.error('取得股價失敗：', error);
+        statusText.textContent = '取得資料失敗，請確認後端伺服器（node server.js）是否已啟動。';
+        stop(); // 連續失敗時自動停止輪詢，避免持續噴錯
+      }
+    }
+
+    function start() {
+      if (timerId) return;
+      fetchLatestPrice(); // 立即先取得一次，不用等第一個 interval
+      timerId = setInterval(fetchLatestPrice, POLLING_INTERVAL_MS);
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+    }
+
+    function stop() {
+      clearInterval(timerId);
+      timerId = null;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
+
+    startBtn.addEventListener('click', start);
+    stopBtn.addEventListener('click', stop);
+  </script>
+</body>
+</html>

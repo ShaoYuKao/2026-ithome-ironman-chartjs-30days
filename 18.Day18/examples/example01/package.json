@@ -1,0 +1,13 @@
+{
+  "name": "day18-realtime-stock-api",
+  "version": "1.0.0",
+  "description": "Day 18 範例：使用 Express 提供即時股價模擬 API，前端以 setInterval 輪詢並更新 Chart.js 圖表",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
