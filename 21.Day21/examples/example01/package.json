@@ -1,0 +1,15 @@
+{
+  "name": "day21-exchange-rate-dashboard",
+  "version": "1.0.0",
+  "description": "Day 21｜第三週總複習與小專案：串接公開匯率 API（Frankfurter）的即時互動匯率儀表板",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

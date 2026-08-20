@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Day 21 - 即時互動匯率儀表板</title>
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 16px;
+      color: #333;
+    }
+    h1 { margin-bottom: 4px; }
+    p.desc { color: #666; }
+    form.toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-end;
+      background: #f5f6f8;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+    .checkbox-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    button { padding: 8px 16px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background: #fff; }
+    button.primary { background: #2980b9; color: #fff; border-color: #2980b9; }
+    #statusText.loading { color: #f0a500; }
+    #statusText.success { color: #2e8b57; }
+    #statusText.error { color: #e04b4b; }
+    #updatedAtText { color: #999; font-size: 13px; }
+    #detailBox {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: #eef6ff;
+      border-left: 4px solid #2980b9;
+      border-radius: 4px;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    /* Day 20 響應式技巧：使用「專屬容器」包住 canvas，
+       並搭配 maintainAspectRatio: false + 容器固定高度，讓圖表寬度隨螢幕縮放，高度維持穩定 */
+    .chart-wrapper {
+      position: relative;
+      width: 100%;
+      height: 420px;
+    }
+    @media (max-width: 600px) {
+      .chart-wrapper { height: 300px; }
+      form.toolbar { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <h1>即時互動匯率儀表板</h1>
+  <p class="desc">
+    資料來源：Express 後端代理 → <a href="https://frankfurter.dev" target="_blank" rel="noopener">Frankfurter 公開匯率 API</a>（不需 API 金鑰）。
+    這個小專案整合了第三週學到的：<strong>串接後端 API（Day 16）</strong>、<strong>動態資料更新／輪詢（Day 18）</strong>、
+    <strong>點擊互動事件（Day 19）</strong> 以及 <strong>響應式版面設計（Day 20）</strong>。
+  </p>
+  <p>⚠️ 執行前請先在 <code>examples/example01</code> 資料夾內執行 <code>npm install</code> 與 <code>npm start</code> 啟動後端伺服器。</p>
+
+  <form class="toolbar" id="controlForm">
+    <div class="field">
+      <label for="baseSelect">本位幣別</label>
+      <select id="baseSelect">
+        <option value="TWD" selected>新台幣 TWD</option>
+        <option value="USD">美元 USD</option>
+        <option value="EUR">歐元 EUR</option>
+        <option value="JPY">日圓 JPY</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>目標幣別（可複選）</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="quote" value="USD" checked /> USD</label>
+        <label><input type="checkbox" name="quote" value="JPY" checked /> JPY</label>
+        <label><input type="checkbox" name="quote" value="EUR" checked /> EUR</label>
+        <label><input type="checkbox" name="quote" value="GBP" /> GBP</label>
+        <label><input type="checkbox" name="quote" value="CNY" /> CNY</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="daysSelect">回溯天數</label>
+      <select id="daysSelect">
+        <option value="7">近 7 天</option>
+        <option value="30" selected>近 30 天</option>
+        <option value="90">近 90 天</option>
+      </select>
+    </div>
+
+    <button type="submit" class="primary">查詢</button>
+    <button type="button" id="pollBtn">開始即時更新（每 60 秒）</button>
+  </form>
+
+  <p>
+    <span id="statusText">尚未載入資料</span>　
+    <span id="updatedAtText"></span>
+  </p>
+
+  <div class="chart-wrapper">
+    <canvas id="rateChart"></canvas>
+  </div>
+
+  <div id="detailBox">點擊圖表上的資料點，這裡會顯示該幣別在該日期的詳細匯率。</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/date-fns@3/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
+  <script>
+    const API_BASE_URL = 'http://localhost:3000';
+    const COLORS = { USD: '#2980b9', JPY: '#e74c3c', EUR: '#27ae60', GBP: '#8e44ad', CNY: '#f39c12' };
+
+    const form = document.getElementById('controlForm');
+    const statusText = document.getElementById('statusText');
+    const updatedAtText = document.getElementById('updatedAtText');
+    const detailBox = document.getElementById('detailBox');
+    const pollBtn = document.getElementById('pollBtn');
+
+    let chart = null;
+    let pollTimerId = null;
+
+    function getSelectedQuotes() {
+      return [...document.querySelectorAll('input[name="quote"]:checked')].map((el) => el.value);
+    }
+
+    function setStatus(text, type) {
+      statusText.textContent = text;
+      statusText.className = type;
+    }
+
+    function buildDatasets(series, dates) {
+      return Object.keys(series).map((quote) => ({
+        label: quote,
+        data: dates.map((date, i) => ({ x: date, y: series[quote][i] })),
+        borderColor: COLORS[quote] || '#333',
+        backgroundColor: `${COLORS[quote] || '#333'}33`,
+        spanGaps: true, // 遇到 API 沒有回傳資料的日期（null）時，線條直接跳過該點連接下一點
+        tension: 0.25,
+        pointRadius: 2,
+        pointHoverRadius: 6
+      }));
+    }
+
+    function renderChart(base, dates, series) {
+      const datasets = buildDatasets(series, dates);
+
+      // Day 16 學過的重點：重複建立圖表前，一定要先銷毀舊的實體，避免畫面疊圖
+      if (chart) {
+        chart.destroy();
+      }
+
+      chart = new Chart(document.getElementById('rateChart'), {
+        type: 'line',
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false, // 搭配外層 .chart-wrapper 的固定高度，讓寬高分開控制
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            title: { display: true, text: `以 1 ${base} 兌換其他幣別的匯率走勢` },
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y;
+                  return `${context.dataset.label}：${value == null ? '無資料' : value.toFixed(4)}`;
+                }
+              }
+            },
+            // chartjs-plugin-zoom（Day 6 學過的進階外掛）：滑鼠滾輪縮放、拖曳平移，方便查看長區間的細節
+            zoom: {
+              zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+              pan: { enabled: true, mode: 'x' }
+            }
+          },
+          scales: {
+            x: {
+              type: 'time', // 搭配 chartjs-adapter-date-fns，讓 x 軸正確識別日期字串
+              time: { unit: 'day', tooltipFormat: 'yyyy-MM-dd' },
+              title: { display: true, text: '日期' }
+            },
+            y: {
+              title: { display: true, text: `匯率（1 ${base} 兌換多少目標幣別）` }
+            }
+          },
+          // Day 19 學過的互動事件：點擊資料點時，把詳細資料顯示在下方的說明區塊
+          onClick: (event, elements) => {
+            if (!elements.length) return;
+            const { datasetIndex, index } = elements[0];
+            const dataset = chart.data.datasets[datasetIndex];
+            const point = dataset.data[index];
+            detailBox.textContent =
+              point.y == null
+                ? `${dataset.label}｜${point.x}：當日無資料`
+                : `${dataset.label}｜${point.x}：1 ${base} = ${point.y.toFixed(4)} ${dataset.label}`;
+          }
+        }
+      });
+    }
+
+    // Day 16 學過的完整非同步載入流程：Loading → Success / Error
+    async function loadRates() {
+      const base = document.getElementById('baseSelect').value;
+      const quotes = getSelectedQuotes();
+      const days = document.getElementById('daysSelect').value;
+
+      if (quotes.length === 0) {
+        setStatus('請至少勾選一個目標幣別', 'error');
+        return;
+      }
+
+      setStatus('資料載入中...', 'loading');
+      try {
+        const url = `${API_BASE_URL}/api/rates?base=${base}&quotes=${quotes.join(',')}&days=${days}`;
+        const response = await fetch(url);
+        const json = await response.json();
+
+        if (!response.ok) {
+          throw new Error(json.message || `HTTP 錯誤狀態碼：${response.status}`);
+        }
+
+        renderChart(json.base, json.dates, json.series);
+        setStatus(`資料載入完成！${json.fromCache ? '（來自伺服器快取）' : '（即時查詢外部 API）'}`, 'success');
+        updatedAtText.textContent = `最後更新時間：${new Date(json.updatedAt).toLocaleString('zh-TW')}`;
+      } catch (error) {
+        console.error('讀取匯率資料失敗：', error);
+        setStatus(`資料載入失敗：${error.message}`, 'error');
+      }
+    }
+
+    // Day 18 學過的輪詢（Polling）技巧：定時重新呼叫 API，模擬「即時」更新的效果
+    function togglePolling() {
+      if (pollTimerId) {
+        clearInterval(pollTimerId);
+        pollTimerId = null;
+        pollBtn.textContent = '開始即時更新（每 60 秒）';
+      } else {
+        pollTimerId = setInterval(loadRates, 60000);
+        pollBtn.textContent = '停止即時更新';
+      }
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      loadRates();
+    });
+    pollBtn.addEventListener('click', togglePolling);
+
+    loadRates(); // 頁面載入時，先查詢一次預設條件的資料
+  </script>
+</body>
+</html>
